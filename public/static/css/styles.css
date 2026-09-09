@@ -439,6 +439,25 @@ table.data-table tbody tr:hover { background: var(--surface-alt); }
 .calendar-dot-row { display: flex; gap: 3px; flex-wrap: wrap; }
 .calendar-dot { width: 6px; height: 6px; border-radius: 50%; }
 
+/* Dashboard "mini" variant — compact month grid, no per-day event dots list,
+   just a highlight + small dot for days with an unpaid upcoming expense. */
+.calendar-grid.mini { gap: 4px; }
+.calendar-cell.mini {
+  min-height: 34px; padding: 3px; border-radius: 8px; gap: 2px; position: relative; align-items: center; justify-content: center;
+}
+.calendar-cell.mini .calendar-date.mini { font-size: 11px; font-weight: 600; }
+.calendar-cell.mini.has-due { background: var(--warning-soft); border-color: var(--warning); }
+.calendar-cell.mini.has-overdue { background: var(--danger-soft); border-color: var(--danger); }
+.calendar-cell.mini.has-due.today,
+.calendar-cell.mini.has-overdue.today { box-shadow: 0 0 0 1px var(--primary); }
+.calendar-cell.mini .calendar-dot { position: absolute; bottom: 3px; width: 4px; height: 4px; background: var(--warning); }
+.calendar-cell.mini.has-overdue .calendar-dot { background: var(--danger); }
+
+.legend-swatch { width: 10px; height: 10px; border-radius: 4px; display: inline-block; border: 1px solid var(--border); }
+.legend-swatch.today { background: var(--surface); box-shadow: 0 0 0 1px var(--primary); border-color: transparent; }
+.legend-swatch.has-due { background: var(--warning-soft); border-color: var(--warning); }
+.legend-swatch.has-overdue { background: var(--danger-soft); border-color: var(--danger); }
+
 .public-nav { display: flex; align-items: center; justify-content: space-between; padding: 18px 32px; max-width: 1180px; margin: 0 auto; }
 .public-hero { max-width: 1180px; margin: 0 auto; padding: 60px 32px 40px; }
 .public-page { background: var(--bg); min-height: 100vh; }

@@ -14,16 +14,24 @@ import { processDueRecurring } from '../services/recurringService.js';
 import { categoriesById as toCategoryMap } from '../services/categoryService.js';
 import { getAiInsights } from '../services/aiService.js';
 import { formatMoney } from '../utils/currency.js';
-import { getPeriodRange, getPreviousPeriodRange, formatDayMonth, relativeDueLabel, todayISO } from '../utils/dates.js';
+import { getPeriodRange, getPreviousPeriodRange, formatDayMonth, relativeDueLabel, todayISO, toISODate } from '../utils/dates.js';
 import { calcTotals, calcSpendingByCategory, calcBudgetProgress, percentChange, calcSafeDailySpending } from '../utils/calculations.js';
 import { openTransactionModal } from '../components/transactionForm.js';
 
 let unsub = null;
 let renderSeq = 0;
 
+function greetingTitle() {
+  const { profile, user } = getState();
+  const name = (profile?.full_name || '').trim().split(/\s+/)[0]
+    || user?.email?.split('@')[0]
+    || 'there';
+  return `Welcome, ${name}`;
+}
+
 export async function renderDashboard() {
   if (unsub) unsub();
-  const content = renderShell({ route: '#/dashboard', title: 'Main Dashboard', onPeriodChange: load });
+  const content = renderShell({ route: '#/dashboard', title: greetingTitle(), onPeriodChange: load });
   content.appendChild(loadingBlock('Loading your dashboard…'));
 
   unsub = subscribe(() => load());
@@ -105,8 +113,9 @@ export async function renderDashboard() {
       ])
     );
     content.appendChild(
-      h('div', { class: 'grid grid-cols-2', style: 'margin-top:18px' }, [
+      h('div', { class: 'grid grid-cols-3', style: 'margin-top:18px' }, [
         renderBudgetProgressCard(budgetRows),
+        renderMiniCalendarCard(upcoming),
         renderUpcomingCard(upcomingSoon, catMap)
       ])
     );
@@ -230,6 +239,71 @@ function insightRow(icon, text, muted = false, faint = false) {
     h('i', { class: `fas ${icon}`, style: `margin-top:2px;color:${muted ? 'var(--text-faint)' : 'var(--accent)'};font-size:11px` }),
     h('span', {}, text)
   ]);
+}
+
+function renderMiniCalendarCard(upcoming) {
+  const today = todayISO();
+  const now = new Date();
+  const y = now.getFullYear(), m = now.getMonth();
+  const monthLabel = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const firstDay = new Date(y, m, 1);
+  const startOffset = (firstDay.getDay() + 6) % 7; // Monday-first
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
+
+  // Only unpaid items matter for "needs to be paid" highlighting.
+  const unpaidByDate = new Map();
+  upcoming.filter((u) => u.effective_status !== 'paid').forEach((u) => {
+    if (!unpaidByDate.has(u.due_date)) unpaidByDate.set(u.due_date, []);
+    unpaidByDate.get(u.due_date).push(u);
+  });
+
+  const card = h('div', { class: 'card' }, [
+    h('div', { class: 'card-header' }, [
+      h('div', { class: 'card-title' }, monthLabel),
+      h('a', { style: 'font-size:12px;font-weight:700;color:var(--primary);cursor:pointer', onclick: () => (window.location.hash = '#/calendar') }, 'Full calendar')
+    ])
+  ]);
+
+  card.appendChild(
+    h('div', { class: 'calendar-grid mini', style: 'margin-bottom:6px' },
+      ['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d) => h('div', { class: 'calendar-dow' }, d)))
+  );
+
+  const grid = h('div', { class: 'calendar-grid mini' });
+  for (let i = 0; i < startOffset; i++) grid.appendChild(h('div', { class: 'calendar-cell mini other-month' }));
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateISO = toISODate(new Date(y, m, d));
+    const dayItems = unpaidByDate.get(dateISO) || [];
+    const hasOverdue = dayItems.some((u) => u.effective_status === 'overdue');
+    const isToday = dateISO === today;
+
+    const classes = ['calendar-cell', 'mini'];
+    if (isToday) classes.push('today');
+    if (dayItems.length) classes.push(hasOverdue ? 'has-overdue' : 'has-due');
+
+    const title = dayItems.length
+      ? `${dayItems.map((u) => u.name).join(', ')} — ${formatMoney(dayItems.reduce((s, u) => s + Number(u.amount), 0))}`
+      : undefined;
+
+    grid.appendChild(
+      h('div', { class: classes.join(' '), title, onclick: () => (window.location.hash = '#/calendar') }, [
+        h('div', { class: 'calendar-date mini' }, String(d)),
+        dayItems.length ? h('span', { class: 'calendar-dot' }) : null
+      ])
+    );
+  }
+  card.appendChild(grid);
+
+  card.appendChild(
+    h('div', { class: 'flex gap-12', style: 'margin-top:14px;font-size:11.5px;color:var(--text-muted)' }, [
+      h('span', { class: 'flex items-center gap-8' }, [h('span', { class: 'legend-swatch today' }), 'Today']),
+      h('span', { class: 'flex items-center gap-8' }, [h('span', { class: 'legend-swatch has-due' }), 'Bill due']),
+      h('span', { class: 'flex items-center gap-8' }, [h('span', { class: 'legend-swatch has-overdue' }), 'Overdue'])
+    ])
+  );
+
+  return card;
 }
 
 function renderBudgetProgressCard(budgetRows) {
