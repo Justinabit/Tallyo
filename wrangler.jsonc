@@ -1,0 +1,27 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "tallyo",
+  "compatibility_date": "2026-08-25",
+  "pages_build_output_dir": "./dist",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ]
+  // ---------------------------------------------------------------------
+  // Tallyo does NOT use Cloudflare D1/KV/R2 — Supabase is the database.
+  // The variables below are read by src/index.tsx via c.env.*
+  //
+  // 🔑 SUPABASE URL / ANON KEY — set these for LOCAL dev in .dev.vars
+  //    (copy .env.example -> .dev.vars) and for PRODUCTION either in the
+  //    Cloudflare Pages dashboard ("Settings -> Environment variables")
+  //    or with: npx wrangler pages secret put SUPABASE_URL
+  //
+  // 🔑 AI_API_KEY — OPTIONAL. Only needed for AI-generated insights.
+  //    Set with: npx wrangler pages secret put AI_API_KEY
+  //    NEVER put this one in "vars" below — secrets should always be set
+  //    with `wrangler pages secret put`, never committed to this file.
+  // ---------------------------------------------------------------------
+  // "vars": {
+  //   "SUPABASE_URL": "https://YOUR-PROJECT.supabase.co",
+  //   "SUPABASE_ANON_KEY": "YOUR-ANON-KEY"
+  // }
+}
