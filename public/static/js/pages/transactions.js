@@ -22,7 +22,7 @@ export async function renderTransactionsPage() {
     route: '#/transactions', title: 'Transactions', onPeriodChange: load,
     actions: [
       h('button', { class: 'btn btn-secondary btn-sm', onclick: exportCsv }, [h('i', { class: 'fas fa-download' }), 'Export CSV']),
-      h('button', { class: 'btn btn-primary btn-sm', onclick: () => openTransactionModal({ onSaved: load }) }, [h('i', { class: 'fas fa-plus' }), 'Add Transaction'])
+      h('button', { class: 'btn btn-primary btn-sm', onclick: () => openTransactionModal({ onSaved: load }) }, 'Add Transaction')
     ]
   });
   content.appendChild(loadingBlock());

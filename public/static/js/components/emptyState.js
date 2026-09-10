@@ -10,7 +10,7 @@ export function emptyState({ icon = 'fa-inbox', title, message, actionLabel, onA
     h('p', {}, message)
   ];
   if (actionLabel) {
-    children.push(h('button', { class: 'btn btn-primary btn-sm', onclick: onAction }, [h('i', { class: 'fas fa-plus' }), actionLabel]));
+    children.push(h('button', { class: 'btn btn-primary btn-sm', onclick: onAction }, actionLabel));
   }
   return h('div', { class: 'empty-state' }, children);
 }
