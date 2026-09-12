@@ -65,6 +65,8 @@ You are given ALREADY-CALCULATED numbers. Do not recalculate or invent numbers.
 
 Using ONLY the numbers provided, write 2-4 short, specific, encouraging observations that a user would find genuinely useful.
 
+Each observation must highlight a DIFFERENT fact or angle. Never restate the same underlying fact twice in different words (e.g. don't say both "X is your largest expense" and "X was your biggest outflow" — pick one and use the remaining observations to surface something else, like a trend, a comparison to the prior period, or a specific transaction).
+
 Maximum 22 words per observation.
 
 Do not give generic advice.

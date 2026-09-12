@@ -94,7 +94,9 @@ function renderCalendarCard(eventsByDate, onChange) {
   card.appendChild(grid);
 
   card.appendChild(
-    h('div', { class: 'flex gap-12', style: 'margin-top:16px;font-size:11.5px;color:var(--text-muted)' }, [
+    h('div', { class: 'flex gap-16', style: 'margin-top:16px;font-size:11.5px;color:var(--text-muted);flex-wrap:wrap' }, [
+      h('span', { class: 'flex items-center gap-8' }, [h('span', { class: 'legend-swatch-today' }), 'Today']),
+      h('span', { class: 'flex items-center gap-8' }, [h('span', { class: 'legend-swatch-selected' }), 'Selected day']),
       legendDot('#16A34A', 'Income'), legendDot('#E11D2E', 'Expense'), legendDot('#F59E0B', 'Upcoming'), legendDot('#2563EB', 'Recurring')
     ])
   );

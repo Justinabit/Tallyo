@@ -23,6 +23,11 @@ export function calcTotals(transactions) {
   return { income, expense, balance: income - expense };
 }
 
+/** Slices below this share of total spend render as an illegible sliver in
+ *  the donut chart and add clutter without conveying anything useful at a
+ *  glance — they get rolled into a combined "Other" row instead. */
+const SMALL_SLICE_THRESHOLD_PERCENT = 5;
+
 /** Group expense transactions by category, returning totals + percentage of total expense. */
 export function calcSpendingByCategory(transactions, categoriesById) {
   const totals = new Map();
@@ -34,7 +39,7 @@ export function calcSpendingByCategory(transactions, categoriesById) {
     const key = t.category_id || 'uncategorized';
     totals.set(key, (totals.get(key) || 0) + amt);
   }
-  const rows = [...totals.entries()].map(([categoryId, amount]) => {
+  let rows = [...totals.entries()].map(([categoryId, amount]) => {
     const cat = categoriesById?.get(categoryId);
     return {
       categoryId,
@@ -46,6 +51,32 @@ export function calcSpendingByCategory(transactions, categoriesById) {
     };
   });
   rows.sort((a, b) => b.amount - a.amount);
+
+  // Only worth grouping if there are at least two slivers to combine — a
+  // single small category is still meaningful on its own and shouldn't be
+  // relabeled "Other" just because it's small.
+  const big = rows.filter((r) => r.percent >= SMALL_SLICE_THRESHOLD_PERCENT);
+  const small = rows.filter((r) => r.percent < SMALL_SLICE_THRESHOLD_PERCENT);
+  if (small.length > 1) {
+    const otherAmount = small.reduce((sum, r) => sum + r.amount, 0);
+    const existingOther = big.find((r) => r.name === 'Other');
+    if (existingOther) {
+      existingOther.amount += otherAmount;
+      existingOther.percent = (existingOther.amount / totalExpense) * 100;
+      rows = big;
+    } else {
+      rows = [...big, {
+        categoryId: 'other-grouped',
+        name: 'Other',
+        color: '#9AA0AC',
+        icon: 'fa-ellipsis',
+        amount: otherAmount,
+        percent: totalExpense > 0 ? (otherAmount / totalExpense) * 100 : 0
+      }];
+    }
+    rows.sort((a, b) => b.amount - a.amount);
+  }
+
   return { rows, totalExpense };
 }
 

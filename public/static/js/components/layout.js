@@ -2,7 +2,7 @@
 // TALLYO — Authenticated app shell (sidebar + topbar + content mount)
 // =============================================================================
 import { h } from '../utils/dom.js';
-import { renderSidebar, renderSidebarBackdrop } from './sidebar.js';
+import { renderSidebar, renderSidebarBackdrop, isSidebarCollapsed } from './sidebar.js';
 import { renderTopbar } from './topbar.js';
 import { destroyChartsIn } from './charts.js';
 
@@ -19,7 +19,7 @@ export function renderShell({ route, title, onPeriodChange, showPeriod = true, a
   root.innerHTML = '';
 
   const content = h('div', { class: 'page-content' });
-  const main = h('div', { class: 'main-area' }, [
+  const main = h('div', { class: `main-area${isSidebarCollapsed() ? ' sidebar-collapsed' : ''}` }, [
     renderTopbar(title, { onPeriodChange, showPeriod, actions }),
     content
   ]);
